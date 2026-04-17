@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bell, Search, Command, ChevronDown, User, Settings, LogOut, Menu } from "lucide-react";
+import { Bell, Search, User, Settings, LogOut, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { siteConfig } from "@/config/site";
-import { cn } from "@/lib/utils"; // Fixed the missing 'cn' import
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -13,7 +13,6 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  // Removed unused 'router' to clear the warning
 
   const handleSignOut = () => {
     document.cookie = "auth_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
@@ -32,14 +31,18 @@ export function Header({ onMenuClick }: HeaderProps) {
   }, []);
 
   return (
-    <header className="h-20 px-4 md:px-8 flex items-center justify-between bg-white/40 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
+    <header className="sticky top-0 w-full h-20 px-4 md:px-8 flex items-center justify-between bg-white md:bg-white/40 backdrop-blur-md border-b border-slate-200 z-40">
       
       <div className="flex items-center gap-4">
+        {/* MOBILE MENU TRIGGER - High Z-Index and clear hit area */}
         <button 
-          onClick={onMenuClick}
-          className="lg:hidden p-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+          onClick={(e) => {
+            e.stopPropagation();
+            onMenuClick();
+          }}
+          className="lg:hidden p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 active:bg-slate-100 transition-all z-50"
         >
-          <Menu size={20} />
+          <Menu size={22} />
         </button>
 
         <div className="flex-1 max-w-md hidden sm:block">
@@ -49,10 +52,6 @@ export function Header({ onMenuClick }: HeaderProps) {
               placeholder="Search..."
               className="bg-transparent outline-none text-sm text-gray-800 placeholder:text-gray-400 w-full"
             />
-            <div className="hidden md:flex items-center gap-1 bg-white px-1.5 py-0.5 rounded-md border shadow-sm">
-              <Command size={10} className="text-gray-400" />
-              <span className="text-[10px] font-bold text-gray-400">K</span>
-            </div>
           </div>
         </div>
       </div>
@@ -82,9 +81,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                  </div>
               </div>
             </div>
-            <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }}>
-              <ChevronDown size={16} className="text-gray-400 group-hover:text-indigo-600" />
-            </motion.div>
           </button>
 
           <AnimatePresence>
@@ -95,10 +91,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 className="absolute right-0 mt-4 w-56 bg-white border border-slate-200 rounded-[1.5rem] shadow-2xl p-2 z-50"
               >
-                <div className="px-4 py-3 border-b border-slate-50 mb-1 sm:hidden">
-                    <p className="text-sm font-bold text-gray-900">{siteConfig.user.name}</p>
-                    <p className="text-[10px] text-gray-400 uppercase">{siteConfig.user.role}</p>
-                </div>
                 <DropdownItem icon={<User size={16}/>} label="My Profile" />
                 <DropdownItem icon={<Settings size={16}/>} label="Settings" />
                 <div className="h-px bg-slate-100 my-1" />
@@ -112,7 +104,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   );
 }
 
-// Added 'cn' here to fix the DropdownItem component too
 function DropdownItem({ icon, label, onClick, variant = "default" }: { icon: React.ReactNode, label: string, onClick?: () => void, variant?: "default" | "danger" }) {
   return (
     <button onClick={onClick} className={cn(
