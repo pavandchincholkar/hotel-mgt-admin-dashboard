@@ -3,31 +3,36 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { siteConfig } from "@/config/site";
 
 export default function LoginPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "redirecting">("idle");
-  const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setStatus("loading");
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-    // 1. Simulate API Auth
-    document.cookie = "auth_session=true; path=/; max-age=3600"; 
+    // Now checking against siteConfig values
+    if (email === siteConfig.auth.adminEmail && password === siteConfig.auth.adminPassword) {
+      setStatus("loading");
 
-    setTimeout(() => {
-      setStatus("redirecting");
-      // 2. Start navigation
-      router.push("/"); 
-    }, 1000);
+      document.cookie = "auth_session=true; path=/; max-age=3600; SameSite=Lax"; 
+
+      setTimeout(() => {
+        setStatus("redirecting");
+        window.location.href = "/"; 
+      }, 1000);
+    } else {
+      alert(`Invalid Credentials! Try ${siteConfig.auth.adminEmail} / ${siteConfig.auth.adminPassword}`);
+    }
   };
 
   return (
     <div className="h-screen w-full flex items-center justify-center p-6 relative overflow-hidden bg-[#f1f5f9] antialiased">
       
-      {/* --- FULL SCREEN REDIRECT OVERLAY --- */}
       <AnimatePresence>
         {status === "redirecting" && (
           <motion.div 
@@ -49,17 +54,16 @@ export default function LoginPage() {
         )}
       </AnimatePresence>
 
-      {/* --- BACKGROUND BLURS --- */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-200/40 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-200/40 blur-[120px]" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[450px] z-10"
+        className="w-full max-w-md z-10"
       >
         <div className="bg-white rounded-3xl p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white">
-           <div className="flex flex-col items-center mb-8">
+          <div className="flex flex-col items-center mb-8">
             <div className="h-14 w-14 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg mb-4 shadow-indigo-200">
               <Sparkles className="text-white" size={28} />
             </div>
@@ -73,7 +77,13 @@ export default function LoginPage() {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
-                <input type="email" required className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-600 transition-all text-gray-900 font-bold text-sm" placeholder="admin@hotelpro.com" />
+                <input 
+                  name="email" 
+                  type="email" 
+                  required 
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-600 transition-all text-gray-900 font-bold text-sm" 
+                  placeholder={siteConfig.auth.adminEmail} 
+                />
               </div>
             </div>
 
@@ -81,7 +91,13 @@ export default function LoginPage() {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Password</label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
-                <input type="password" required className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-600 transition-all text-gray-900 font-bold text-sm" placeholder="••••••••" />
+                <input 
+                  name="password" 
+                  type="password" 
+                  required 
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-600 transition-all text-gray-900 font-bold text-sm" 
+                  placeholder="••••••••" 
+                />
               </div>
             </div>
 

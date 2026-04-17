@@ -4,6 +4,10 @@ export const siteConfig = {
   description: "Elite Property Management Suite",
   author: "PC",
   version: "1.0.0",
+  auth: {
+    adminEmail: "admin@hotelpro.com",
+    adminPassword: "admin@123#456",
+  },
   user: {
     name: "Alex Morgan",
     role: "General Manager",

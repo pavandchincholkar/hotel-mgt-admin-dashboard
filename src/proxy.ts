@@ -1,18 +1,27 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export default function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Check for a mock auth cookie
-  const isAuthenticated = request.cookies.get("auth_session");
+  // Check if the cookie exists
+  const isAuthenticated = request.cookies.get("auth_session")?.value;
 
-  // If trying to access dashboard (root) without a cookie, redirect to login
-  if (pathname === '/' && !isAuthenticated) {
+  // 1. ALLOW the login page and static assets to load no matter what
+  if (
+    pathname === '/login' || 
+    pathname.startsWith('/_next') || 
+    pathname.includes('.')
+  ) {
+    return NextResponse.next();
+  }
+
+  // 2. PROTECT: If not logged in, force to /login
+  if (!isAuthenticated) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If already logged in and trying to go to login page, send to dashboard
+  // 3. LOGIC: If already logged in, don't let them see the /login page
   if (pathname === '/login' && isAuthenticated) {
     return NextResponse.redirect(new URL('/', request.url));
   }
@@ -21,5 +30,6 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/login'],
+  // This matcher ensures the proxy runs on every single page
+  matcher: ['/:path*'],
 };
