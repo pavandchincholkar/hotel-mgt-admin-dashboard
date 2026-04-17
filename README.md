@@ -14,9 +14,6 @@ If you don't have pnpm installed, run:
 3. Open `http://localhost:3000`
 
 ## 📁 Key Folders
-- `/Documentation`: Detailed guide and setup instructions.
-- `/src/config`: Change your brand name and logo here.
+- `/src/config/site.ts`: Change here according to your details.
 - `/src/app`: Main pages and dashboard routes.
 
-## 🛠 Support
-For technical assistance, please contact us via the ThemeForest support tab.
