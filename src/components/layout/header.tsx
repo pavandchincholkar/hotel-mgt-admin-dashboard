@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bell, Search, User, Settings, LogOut, Menu } from "lucide-react";
+import { Bell, Search, User, Settings, LogOut, Menu, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
@@ -15,11 +15,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleSignOut = () => {
+    // Clear the session cookie
     document.cookie = "auth_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     setIsDropdownOpen(false);
     window.location.href = "/login";
   };
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -31,22 +33,24 @@ export function Header({ onMenuClick }: HeaderProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 w-full h-20 px-4 md:px-8 flex items-center justify-between bg-white md:bg-white/40 backdrop-blur-md border-b border-slate-200 z-40">
+    <header className="shrink-0 w-full h-20 px-4 md:px-8 flex items-center justify-between bg-white md:bg-white/40 backdrop-blur-md border-b border-slate-200 z-40 relative">
       
       <div className="flex items-center gap-4">
-        {/* MOBILE MENU TRIGGER - High Z-Index and clear hit area */}
+        {/* MOBILE MENU TRIGGER - Boosted Z-Index and touch area */}
         <button 
           onClick={(e) => {
             e.stopPropagation();
             onMenuClick();
           }}
-          className="lg:hidden p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 active:bg-slate-100 transition-all z-50"
+          className="lg:hidden p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 active:bg-slate-100 transition-all z-50 cursor-pointer"
+          aria-label="Open sidebar"
         >
           <Menu size={22} />
         </button>
 
+        {/* Search Bar - Hidden on small mobile to prevent header overflow */}
         <div className="flex-1 max-w-md hidden sm:block">
-          <div className="group flex items-center gap-3 bg-gray-200/50 px-4 py-2 rounded-2xl border border-transparent focus-within:border-indigo-300 focus-within:bg-white transition-all duration-300">
+          <div className="group flex items-center gap-3 bg-gray-200/50 px-4 py-2.5 rounded-2xl border border-transparent focus-within:border-indigo-300 focus-within:bg-white transition-all duration-300">
             <Search size={18} className="text-gray-400 group-focus-within:text-indigo-500" />
             <input
               placeholder="Search..."
@@ -56,14 +60,16 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
 
+      {/* Actions & Profile */}
       <div className="flex items-center gap-3 md:gap-6">
-        <button className="relative p-2.5 rounded-xl bg-white border border-slate-200 text-gray-500 hover:text-indigo-600 transition-all">
+        <button className="relative p-2.5 rounded-xl bg-white border border-slate-200 text-gray-500 hover:text-indigo-600 transition-all active:scale-95">
           <Bell size={20} />
           <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
         </button>
 
         <div className="h-8 w-px bg-slate-200 mx-1 md:mx-2" />
 
+        {/* Profile Dropdown Container */}
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -80,7 +86,15 @@ export function Header({ onMenuClick }: HeaderProps) {
                     {siteConfig.user.initials}
                  </div>
               </div>
+              <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 bg-green-500 border-2 border-white rounded-full" />
             </div>
+            
+            <motion.div
+              animate={{ rotate: isDropdownOpen ? 180 : 0 }}
+              className="hidden xs:block"
+            >
+              <ChevronDown size={16} className="text-gray-400 group-hover:text-indigo-600" />
+            </motion.div>
           </button>
 
           <AnimatePresence>
@@ -89,12 +103,23 @@ export function Header({ onMenuClick }: HeaderProps) {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute right-0 mt-4 w-56 bg-white border border-slate-200 rounded-[1.5rem] shadow-2xl p-2 z-50"
+                className="absolute right-0 mt-4 w-56 bg-white border border-slate-200 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-2 z-50 overflow-hidden"
               >
+                {/* Mobile Identity Info (Hidden on Desktop) */}
+                <div className="px-4 py-3 border-b border-slate-50 mb-1 sm:hidden">
+                    <p className="text-sm font-bold text-gray-900">{siteConfig.user.name}</p>
+                    <p className="text-[10px] text-gray-400 uppercase font-bold tracking-tight">{siteConfig.user.role}</p>
+                </div>
+
                 <DropdownItem icon={<User size={16}/>} label="My Profile" />
                 <DropdownItem icon={<Settings size={16}/>} label="Settings" />
                 <div className="h-px bg-slate-100 my-1" />
-                <DropdownItem onClick={handleSignOut} icon={<LogOut size={16}/>} label="Sign Out" variant="danger" />
+                <DropdownItem 
+                  onClick={handleSignOut} 
+                  icon={<LogOut size={16}/>} 
+                  label="Sign Out" 
+                  variant="danger" 
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -104,12 +129,28 @@ export function Header({ onMenuClick }: HeaderProps) {
   );
 }
 
-function DropdownItem({ icon, label, onClick, variant = "default" }: { icon: React.ReactNode, label: string, onClick?: () => void, variant?: "default" | "danger" }) {
+// Sub-component for individual menu items
+function DropdownItem({ 
+  icon, 
+  label, 
+  onClick, 
+  variant = "default" 
+}: { 
+  icon: React.ReactNode, 
+  label: string, 
+  onClick?: () => void,
+  variant?: "default" | "danger" 
+}) {
   return (
-    <button onClick={onClick} className={cn(
-      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all",
-      variant === "danger" ? "text-rose-500 hover:bg-rose-50" : "text-slate-600 hover:bg-slate-50 hover:text-indigo-600"
-    )}>
+    <button 
+      onClick={onClick} 
+      className={cn(
+        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer",
+        variant === "danger" 
+          ? "text-rose-500 hover:bg-rose-50" 
+          : "text-slate-600 hover:bg-slate-50 hover:text-indigo-600"
+      )}
+    >
       <span className="opacity-70">{icon}</span>
       {label}
     </button>
