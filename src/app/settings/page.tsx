@@ -111,7 +111,7 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <InputField label="Full Name" value={siteConfig.user.name} icon={<User size={16}/>} />
                     <InputField label="Account Type" value={siteConfig.user.role} icon={<ShieldCheck size={16}/>} />
-                    <InputField label="Email Address" value="pavan@hotelpro.com" icon={<Mail size={16}/>} />
+                    <InputField label="Email Address" value="pc@hotelpro.com" icon={<Mail size={16}/>} />
                     <InputField label="Phone Number" value="+91 98765 43210" icon={<Phone size={16}/>} />
                     <div className="md:col-span-2">
                       <InputField label="Professional Bio" value="System administrator for HotelPro Enterprise." isTextArea />
