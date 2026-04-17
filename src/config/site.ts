@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: "HotelPro",
   company: "Systems",
-  description: "Elite Property Management Suite",
+  description: "Admin UI",
   author: "PC",
   version: "1.0.0",
   auth: {
