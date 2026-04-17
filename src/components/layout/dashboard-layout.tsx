@@ -5,6 +5,7 @@ import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({
   children,
@@ -16,23 +17,27 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
 
-  // 1. SYNC STATE DURING RENDER
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
     setIsSidebarOpen(false);
   }
 
-  // 2. THE CRITICAL FIX: RESET SCROLL ON NAVIGATION
-  // This ensures that when you switch sections on mobile, 
-  // you start at the top (where the Header is)
   useLayoutEffect(() => {
     if (mainRef.current) {
-      mainRef.current.scrollTo(0, 0); // Force scroll to top
+      mainRef.current.scrollTo(0, 0);
     }
   }, [pathname]);
 
   return (
-    <div className="h-screen w-full bg-[#f1f5f9] flex items-center justify-center p-0 md:p-6 lg:p-8 relative overflow-hidden">
+    /* Restored Responsive Container:
+       - Mobile: fixed inset-0 (Locks the lifting bug)
+       - Desktop: relative + flex center + padding (Restores the card look)
+    */
+    <div className={cn(
+      "w-full bg-[#f1f5f9] selection:bg-indigo-100 overflow-hidden",
+      "fixed inset-0 h-dvh overscroll-none", // Mobile Lock
+      "md:relative md:h-screen md:flex md:items-center md:justify-center md:p-6 lg:p-8" // Desktop Restore
+    )}>
       
       {/* Background Blurs */}
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -43,17 +48,16 @@ export default function DashboardLayout({
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-400 h-full bg-white/80 backdrop-blur-2xl rounded-none md:rounded-3xl shadow-2xl border border-white flex relative z-10 overflow-hidden"
       >
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-        {/* This container must be flex-col and overflow-hidden to lock the header */}
+        {/* Content Wrapper */}
         <div className="flex flex-col flex-1 h-full min-w-0 relative overflow-hidden">
           
-          {/* Header: Physically placed above the scrollable area */}
           <Header onMenuClick={() => setIsSidebarOpen(true)} />
 
-          {/* Main: The ONLY part that actually scrolls */}
           <main 
             ref={mainRef} 
             className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 custom-scrollbar bg-gray-50/40 relative z-0"
