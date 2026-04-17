@@ -36,8 +36,10 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   return (
     <aside className={cn(
-      "fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 flex flex-col h-full z-50 transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:bg-white/10 lg:backdrop-blur-xl",
-      isOpen ? "translate-x-0" : "-translate-x-full"
+      "fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 flex flex-col h-full transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:bg-white/10 lg:backdrop-blur-xl",
+      // Mobile: z-50 to stay above content. Desktop: z-30
+      "z-100 lg:z-30", 
+      isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
     )}>
       
       {/* Brand Identity */}
@@ -58,14 +60,14 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         {/* Mobile Close Button */}
         <button 
           onClick={() => setIsOpen(false)}
-          className="lg:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-400"
+          className="lg:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-400 active:scale-90 transition-transform"
         >
           <X size={20} />
         </button>
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto no-scrollbar">
+      <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto no-scrollbar relative z-10">
         {menu.map((item) => {
           const active = pathname === item.href;
           return (
@@ -98,7 +100,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         })}
       </nav>
 
-      {/* Support Card - Hidden on very small heights */}
+      {/* Support Card */}
       <div className="p-6 mt-auto shrink-0 bg-white/50 border-t border-slate-100 hidden sm:block">
         <div className="bg-slate-900 rounded-4xl p-6 relative overflow-hidden group shadow-xl">
           <div className="absolute -top-12 -right-12 w-24 h-24 bg-indigo-500/30 rounded-full blur-2xl group-hover:bg-indigo-500/50 transition-colors" />
