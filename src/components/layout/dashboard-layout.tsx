@@ -15,28 +15,36 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const mainRef = useRef<HTMLElement>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [prevPathname, setPrevPathname] = useState(pathname);
+  
+  // Track the previous path to detect navigation
+  const [prevPath, setPrevPath] = useState(pathname);
 
-  if (pathname !== prevPathname) {
-    setPrevPathname(pathname);
+  /** * THE REACT 19 FIX: 
+   * We sync state during the render phase. If the path changes, 
+   * we update the state IMMEDIATELY. This prevents the "cascading renders" error.
+   */
+  if (pathname !== prevPath) {
+    setPrevPath(pathname);
     setIsSidebarOpen(false);
+    
+    // Reset browser viewport for mobile lifting bug
+    if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
   }
 
+  // Handle internal container scroll reset
   useLayoutEffect(() => {
     if (mainRef.current) {
-      mainRef.current.scrollTo(0, 0);
+      mainRef.current.scrollTop = 0;
     }
   }, [pathname]);
 
   return (
-    /* Restored Responsive Container:
-       - Mobile: fixed inset-0 (Locks the lifting bug)
-       - Desktop: relative + flex center + padding (Restores the card look)
-    */
     <div className={cn(
       "w-full bg-[#f1f5f9] selection:bg-indigo-100 overflow-hidden",
-      "fixed inset-0 h-dvh overscroll-none", // Mobile Lock
-      "md:relative md:h-screen md:flex md:items-center md:justify-center md:p-6 lg:p-8" // Desktop Restore
+      "fixed inset-0 h-dvh overscroll-none", 
+      "md:relative md:h-screen md:flex md:items-center md:justify-center md:p-6 lg:p-8"
     )}>
       
       {/* Background Blurs */}
@@ -46,31 +54,23 @@ export default function DashboardLayout({
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        key={pathname} 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         className="w-full max-w-400 h-full bg-white/80 backdrop-blur-2xl rounded-none md:rounded-3xl shadow-2xl border border-white flex relative z-10 overflow-hidden"
       >
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-        {/* Content Wrapper */}
         <div className="flex flex-col flex-1 h-full min-w-0 relative overflow-hidden">
-          
           <Header onMenuClick={() => setIsSidebarOpen(true)} />
 
           <main 
             ref={mainRef} 
             className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 custom-scrollbar bg-gray-50/40 relative z-0"
           >
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="min-h-full w-full"
-            >
+            <div className="min-h-full w-full pb-10">
               {children}
-            </motion.div>
+            </div>
           </main>
         </div>
 
