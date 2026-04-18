@@ -2,23 +2,23 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Sparkles, Mail, Lock, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { siteConfig } from "@/config/site";
 
 export default function LoginPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "redirecting">("idle");
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null); // Clear previous errors
     
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    // Now checking against siteConfig values
     if (email === siteConfig.auth.adminEmail && password === siteConfig.auth.adminPassword) {
       setStatus("loading");
-
       document.cookie = "auth_session=true; path=/; max-age=3600; SameSite=Lax"; 
 
       setTimeout(() => {
@@ -26,13 +26,15 @@ export default function LoginPage() {
         window.location.href = "/"; 
       }, 1000);
     } else {
-      alert(`Invalid Credentials! Try ${siteConfig.auth.adminEmail} / ${siteConfig.auth.adminPassword}`);
+      // FIX: Inline error message instead of alert
+      setError("Invalid email or password. Please try again.");
     }
   };
 
   return (
     <div className="h-screen w-full flex items-center justify-center p-6 relative overflow-hidden bg-[#f1f5f9] antialiased">
       
+      {/* Redirecting Overlay */}
       <AnimatePresence>
         {status === "redirecting" && (
           <motion.div 
@@ -73,6 +75,23 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
+            {/* INLINE ERROR MESSAGE */}
+            <AnimatePresence mode="wait">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 flex items-center gap-3 text-rose-600">
+                    <AlertCircle size={18} className="shrink-0" />
+                    <p className="text-xs font-bold uppercase tracking-wide">{error}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email</label>
               <div className="relative group">
@@ -81,6 +100,7 @@ export default function LoginPage() {
                   name="email" 
                   type="email" 
                   required 
+                  onChange={() => setError(null)} // Clear error when typing
                   className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-600 transition-all text-gray-900 font-bold text-sm" 
                   placeholder={siteConfig.auth.adminEmail} 
                 />
@@ -95,6 +115,7 @@ export default function LoginPage() {
                   name="password" 
                   type="password" 
                   required 
+                  onChange={() => setError(null)} // Clear error when typing
                   className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-600 transition-all text-gray-900 font-bold text-sm" 
                   placeholder="••••••••" 
                 />
