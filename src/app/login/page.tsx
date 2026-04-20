@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Mail, Lock, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { Sparkles, Mail, Lock, ArrowRight, Loader2, AlertCircle, Terminal } from "lucide-react";
 import { siteConfig } from "@/config/site";
 
 export default function LoginPage() {
@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null); // Clear previous errors
+    setError(null);
     
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
@@ -26,7 +26,6 @@ export default function LoginPage() {
         window.location.href = "/"; 
       }, 1000);
     } else {
-      // FIX: Inline error message instead of alert
       setError("Invalid email or password. Please try again.");
     }
   };
@@ -75,7 +74,6 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* INLINE ERROR MESSAGE */}
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -100,9 +98,9 @@ export default function LoginPage() {
                   name="email" 
                   type="email" 
                   required 
-                  onChange={() => setError(null)} // Clear error when typing
+                  onChange={() => setError(null)}
                   className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-600 transition-all text-gray-900 font-bold text-sm" 
-                  placeholder={siteConfig.auth.adminEmail} 
+                  placeholder="admin@hotelpro.com" 
                 />
               </div>
             </div>
@@ -115,7 +113,7 @@ export default function LoginPage() {
                   name="password" 
                   type="password" 
                   required 
-                  onChange={() => setError(null)} // Clear error when typing
+                  onChange={() => setError(null)}
                   className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-600 transition-all text-gray-900 font-bold text-sm" 
                   placeholder="••••••••" 
                 />
@@ -134,6 +132,25 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* CREDENTIALS SECTION */}
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <div className="bg-slate-900 rounded-2xl p-4 relative overflow-hidden">
+              <div className="flex items-center gap-2 mb-3">
+                <Terminal size={14} className="text-indigo-400" />
+                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Login Credentials</span>
+              </div>
+              <div className="space-y-1.5 font-mono text-[11px]">
+                <p className="text-slate-400">EMAIL: <span className="text-slate-100">{siteConfig.auth.adminEmail}</span></p>
+                <p className="text-slate-400">PASS: <span className="text-slate-100">{siteConfig.auth.adminPassword}</span></p>
+              </div>
+              {/* Decorative background element */}
+              <div className="absolute top-0 right-0 p-2 opacity-10">
+                <Lock size={40} className="text-white" />
+              </div>
+            </div>
+          </div>
+          
         </div>
       </motion.div>
     </div>
